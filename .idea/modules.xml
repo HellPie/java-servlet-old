@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/TPSIT_Serverlet-HTTP-Basic_16-Feb-2017_RossiD-Casagrande-Turtoi-Pojer-Modolo-DalleMulle.iml" filepath="$PROJECT_DIR$/TPSIT_Serverlet-HTTP-Basic_16-Feb-2017_RossiD-Casagrande-Turtoi-Pojer-Modolo-DalleMulle.iml" />
+      <module fileurl="file://$PROJECT_DIR$/java-servlet.iml" filepath="$PROJECT_DIR$/java-servlet.iml" />
     </modules>
   </component>
 </project>
