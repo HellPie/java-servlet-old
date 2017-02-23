@@ -3,7 +3,6 @@ package dev.hellpie.school.java.servlet;
 import dev.hellpie.school.java.servlet.server.Server;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 public class Main {
 
