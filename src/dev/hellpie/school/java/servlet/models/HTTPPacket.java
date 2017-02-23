@@ -1,38 +1,21 @@
 package dev.hellpie.school.java.servlet.models;
 
-import dev.hellpie.school.java.servlet.values.HTTPCode;
-import dev.hellpie.school.java.servlet.values.HTTPRequest;
 import dev.hellpie.school.java.servlet.values.HTTPVersion;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class HTTPPacket {
+public abstract class HTTPPacket {
 
-	private HTTPVersion version = null;
-	private HTTPRequest method = null;
-	private HTTPCode code = null;
-	private String path = null;
+	protected HTTPVersion version;
 
-	private Map<String, String> headers = new HashMap<>();
-	private byte[] body;
+	protected Map<String, String> headers = new HashMap<>();
+	protected byte[] body;
 
-	private HTTPPacket() { /* DTO Class - Do Not Initialize */ }
+	protected HTTPPacket() { /* DTO Class - Do Not Initialize */ }
 
 	public HTTPVersion getVersion() {
 		return version;
-	}
-
-	public HTTPRequest getMethod() {
-		return method;
-	}
-
-	public HTTPCode getCode() {
-		return code;
-	}
-
-	public String getPath() {
-		return path;
 	}
 
 	public Map<String, String> getHeaders() {
@@ -47,59 +30,48 @@ public class HTTPPacket {
 		return body;
 	}
 
-	public static final class Builder {
-		private HTTPPacket packet = new HTTPPacket();
+	public abstract static class Builder<T extends HTTPPacket, B extends Builder> {
+
+		private HTTPVersion version = null;
+		private Map<String, String> headers = new HashMap<>();
+		private byte[] body = new byte[] {};
 
 		public Builder() {}
+
 		public Builder(HTTPPacket clone) {
-			packet = clone;
+			this.version = clone.version;
+			this.headers.putAll(clone.headers);
+			this.body = clone.body.clone();
 		}
 
-		public Builder withVersion(HTTPVersion version) {
+		public final B withVersion(HTTPVersion version) {
+			if(this.version != null) this.version = version;
+			return getBuilder();
+		}
+
+		public final B addHeader(String name, String value) {
+			if(name != null) this.headers.put(name, (value == null ? "" : value));
+			return getBuilder();
+		}
+
+		public final B withHeaders(HashMap<String, String> headers) {
+			if(headers != null) this.headers = headers;
+			return getBuilder();
+		}
+
+		public final B withBody(byte[] body) {
+			if(this.body != null) this.body = body;
+			return getBuilder();
+		}
+
+		protected final T inject(T packet) {
 			packet.version = version;
-			return this;
-		}
-
-		public Builder withMethod(HTTPRequest method) {
-			packet.method = method;
-			return this;
-		}
-
-		public Builder withCode(HTTPCode code) {
-			packet.code = code;
-			return this;
-		}
-
-		public Builder withPath(String path) {
-			if(path == null) path = ""; // Path shall never be null
-			packet.path = path;
-			return this;
-		}
-
-		public Builder addHeader(String name, String value) {
-			if(name != null) packet.headers.put(name, (value == null ? "" : value));
-			return this;
-		}
-
-		public Builder withHeaders(HashMap<String, String> headers) {
-			if(headers != null) packet.headers = headers;
-			return this;
-		}
-
-		public Builder withBody(byte[] body) {
+			packet.headers.putAll(headers);
 			packet.body = body;
-			return this;
+			return packet;
 		}
 
-		public HTTPPacket build() {
-			HTTPPacket built = new HTTPPacket(); // Clone to avoid modifying this one on next build() on same Builder
-			built.version = packet.version;
-			built.method = packet.method;
-			built.code = packet.code;
-			built.path = packet.path;
-			built.headers = new HashMap<>(packet.headers);
-			built.body = packet.body;
-			return built;
-		}
+		public abstract T build();
+		protected abstract B getBuilder();
 	}
 }
