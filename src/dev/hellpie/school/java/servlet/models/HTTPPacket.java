@@ -32,7 +32,7 @@ public abstract class HTTPPacket {
 
 	public abstract static class Builder<T extends HTTPPacket, B extends Builder> {
 
-		private HTTPVersion version = null;
+		private HTTPVersion version = HTTPVersion.HTTP_1_1;
 		private Map<String, String> headers = new HashMap<>();
 		private byte[] body = new byte[] {};
 

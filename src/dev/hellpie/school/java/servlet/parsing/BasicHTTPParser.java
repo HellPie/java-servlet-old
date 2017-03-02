@@ -30,7 +30,8 @@ public class BasicHTTPParser implements IHTTPParser {
 		if(parsed != null) return parsed;
 		if(raw == null) return null;
 
-		String[] fields = raw.split("\r\n"); // Split by HTTP standard CR-LF
+//		String[] fields = raw.split("\r\n"); // Split by HTTP standard CR-LF
+		String[] fields = raw.split("\n"); // Split by HTTP standard CR-LF // TODO: Split by \r\n as per HTTP specs, requires Server reader rewrite
 		if(fields.length <= 0) return null;
 
 		HTTPPacket.Builder builder;
@@ -63,7 +64,8 @@ public class BasicHTTPParser implements IHTTPParser {
 
 			byte[] body = new byte[] {};
 			for(; i < fields.length; i++) { // Convert String[] into byte[] since body could be raw data
-				String content = fields[i] + "\r\n"; // Add back native indentation in case these were just raw bytes
+//				String content = fields[i] + "\r\n"; // Add back native indentation in case these were just raw bytes
+				String content = fields[i] + "\n"; // Add back native indentation in case these were just raw bytes  // TODO: Retrieve if it was \n, \r or \r\n
 				int currLen = body.length;
 				int extraLen = content.length();
 				byte[] merged = new byte[currLen + extraLen];
