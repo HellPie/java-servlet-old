@@ -1,6 +1,6 @@
 package dev.hellpie.school.java.servlet.values;
 
-public enum HTTPRequest {
+public enum HTTPMethod {
 	GET("GET"),
 	POST("POST"),
 	PUT("PUT"),
@@ -12,15 +12,15 @@ public enum HTTPRequest {
 	;
 
 	private final String type;
-	HTTPRequest(String type) {
+	HTTPMethod(String type) {
 		this.type = type;
 	}
 
-	public final String getType() {
+	public final String getMethod() {
 		return type;
 	}
 
-	public static HTTPRequest get(String string) {
+	public static HTTPMethod get(String string) {
 		switch(string) {
 			case "GET":
 				return GET;

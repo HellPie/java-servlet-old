@@ -12,6 +12,21 @@ public class ResponseHTTPPacket extends HTTPPacket {
 		return code;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder(String.format(
+				"\t- Version: %s\n\t- Code: %s\n\t- Description: %s\n\t- Headers:",
+				version.getVersion(),
+				code.getCode(),
+				code.getDescription()
+		));
+
+		for(String key : headers.keySet()) System.out.println(String.format("\n\t\t- %s: %s", key, headers.get(key)));
+		if(headers.size() == 0) System.out.println("\n\t\t- No Headers Found");
+
+		return builder.append(String.format("\n\t- Body:\n%s", new String(body))).toString();
+	}
+
 	public static final class Builder extends HTTPPacket.Builder<ResponseHTTPPacket, ResponseHTTPPacket.Builder> {
 
 		private HTTPCode code = HTTPCode.SERVER_501;

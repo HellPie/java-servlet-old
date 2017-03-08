@@ -5,7 +5,7 @@ import dev.hellpie.school.java.servlet.models.IHTTPParser;
 import dev.hellpie.school.java.servlet.models.RequestHTTPPacket;
 import dev.hellpie.school.java.servlet.models.ResponseHTTPPacket;
 import dev.hellpie.school.java.servlet.values.HTTPCode;
-import dev.hellpie.school.java.servlet.values.HTTPRequest;
+import dev.hellpie.school.java.servlet.values.HTTPMethod;
 import dev.hellpie.school.java.servlet.values.HTTPVersion;
 
 import java.io.UnsupportedEncodingException;
@@ -31,7 +31,7 @@ public class BasicHTTPParser implements IHTTPParser {
 		if(raw == null) return null;
 
 //		String[] fields = raw.split("\r\n"); // Split by HTTP standard CR-LF
-		String[] fields = raw.split("\n"); // Split by HTTP standard CR-LF // TODO: Split by \r\n as per HTTP specs, requires Server reader rewrite
+		String[] fields = raw.split("\n"); // Split by \n // TODO: Split by \r\n as per HTTP specs, requires Server reader rewrite
 		if(fields.length <= 0) return null;
 
 		HTTPPacket.Builder builder;
@@ -44,7 +44,7 @@ public class BasicHTTPParser implements IHTTPParser {
 					.withCode(HTTPCode.get(Integer.valueOf(mainHeader[1])));
 		} else if(mainHeader.length == 3) { // Request { CODE, PATH, HTTP/X.X }
 			builder = new RequestHTTPPacket.Builder()
-					.withMethod(HTTPRequest.get(mainHeader[0]))
+					.withMethod(HTTPMethod.get(mainHeader[0]))
 					.withPath(mainHeader[1])
 					.withVersion(HTTPVersion.get(mainHeader[2]));
 		} else { // Invalid
@@ -89,7 +89,7 @@ public class BasicHTTPParser implements IHTTPParser {
 		StringBuilder builder = new StringBuilder();
 		if(parsed instanceof ResponseHTTPPacket) { // Response
 			HTTPCode code = ((ResponseHTTPPacket) parsed).getCode();
-			builder.append(String.format("%s %d - %s\r\n",
+			builder.append(String.format("%s %d - %s\r\n", // HTTP requires all newlines to be \r\n
 					parsed.getVersion().getVersion(),
 					code.getCode(),
 					code.getDescription()
@@ -97,7 +97,7 @@ public class BasicHTTPParser implements IHTTPParser {
 		} else { // Request
 			String path = ((RequestHTTPPacket) parsed).getPath();
 			builder.append(String.format("%s \"%s\" %s\r\n",
-					((RequestHTTPPacket) parsed).getMethod().getType(),
+					((RequestHTTPPacket) parsed).getMethod().getMethod(),
 					(path.isEmpty() ? "/" : path),
 					parsed.getVersion().getVersion()));
 		}
