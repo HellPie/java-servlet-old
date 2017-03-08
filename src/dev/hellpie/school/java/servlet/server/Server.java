@@ -127,7 +127,7 @@ public class Server {
 			ResponseHTTPPacket response = builder.build();
 			if(response == null) {
 				System.out.println("[ERROR] HTTP Response was Invalid");
-				reply(new ResponseHTTPPacket.Builder().withCode(HTTPCode.SERVER_501).build()); // Should never reach
+				reply(new ResponseHTTPPacket.Builder().withCode(HTTPCode.SERVER_500).build()); // Should never reach
 				return;
 			} else {
 				// Log the whole content of the response to help with debugging
