@@ -18,10 +18,14 @@ package dev.hellpie.school.java.servlet.models;
 
 import dev.hellpie.school.java.servlet.values.HTTPMethod;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class RequestHTTPPacket extends HTTPPacket {
 
 	private HTTPMethod method = null;
 	private String path = null;
+	private Map<String, String> queries = new HashMap<>();
 
 	private RequestHTTPPacket() { /* DTO Class - Do Not Initialize */ }
 
@@ -33,14 +37,27 @@ public class RequestHTTPPacket extends HTTPPacket {
 		return path;
 	}
 
+	public String getQuery(String name) {
+		return queries.get(name);
+	}
+
+	public Map<String, String> getQueries() {
+		return new HashMap<>(queries);
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(String.format(
-				"\t- Method: %s\n\t- Path: %s\n\t- Version: %s\n\t- Headers:",
+				"\t- Method: %s\n\t- Path: %s\n\t- Version: %s\n\t- Queries:",
 				method.getMethod(),
 				path,
 				version.getVersion()
 		));
+
+		for(String key: queries.keySet()) builder.append(String.format("\n\t\t- %s: %s", key, queries.get(key)));
+		if(queries.size() == 0) builder.append("\n\t\t- No Query Strings Found");
+
+		builder.append("\n\t- Headers:");
 
 		for(String key : headers.keySet()) builder.append(String.format("\n\t\t- %s: %s", key, headers.get(key)));
 		if(headers.size() == 0) builder.append("\n\t\t- No Headers Found");
@@ -52,6 +69,7 @@ public class RequestHTTPPacket extends HTTPPacket {
 
 		private HTTPMethod method = HTTPMethod.GET;
 		private String path = "";
+		private Map<String, String> queries = new HashMap<>();
 
 		public Builder() {}
 
@@ -59,6 +77,7 @@ public class RequestHTTPPacket extends HTTPPacket {
 			super(packet);
 			method = packet.method;
 			path = packet.path;
+			queries = packet.queries;
 		}
 
 		public final Builder withMethod(HTTPMethod method) {
@@ -68,7 +87,17 @@ public class RequestHTTPPacket extends HTTPPacket {
 
 		public final Builder withPath(String path) {
 			if(path == null) path = "";
-			this.path = path;
+			this.path = (path.contains("?") ? path.substring(0, path.indexOf("?")) : path);
+			return this;
+		}
+
+		public final Builder addQuery(String name, String value) {
+			if(name != null) queries.put(name, (value == null ? "" : value));
+			return this;
+		}
+
+		public final Builder withQueries(Map<String, String> queries) {
+			if(queries != null) this.queries = queries;
 			return this;
 		}
 
@@ -77,6 +106,7 @@ public class RequestHTTPPacket extends HTTPPacket {
 			RequestHTTPPacket packet = inject(new RequestHTTPPacket());
 			packet.method = method;
 			packet.path = path;
+			packet.queries = queries;
 			return packet;
 		}
 

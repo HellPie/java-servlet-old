@@ -26,6 +26,7 @@ import dev.hellpie.school.java.servlet.values.HTTPVersion;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.Map;
 
 public class BasicHTTPParser implements IHTTPParser {
 
@@ -59,10 +60,20 @@ public class BasicHTTPParser implements IHTTPParser {
 					.withVersion(HTTPVersion.get(mainHeader[0]))
 					.withCode(HTTPCode.get(Integer.valueOf(mainHeader[1])));
 		} else if(mainHeader.length == 3) { // Request { CODE, PATH, HTTP/X.X }
+			String path = mainHeader[1];
 			builder = new RequestHTTPPacket.Builder()
 					.withMethod(HTTPMethod.get(mainHeader[0]))
-					.withPath(mainHeader[1])
+					.withPath(path) // Will automatically cut off queries in the url
 					.withVersion(HTTPVersion.get(mainHeader[2]));
+
+			if(path != null && path.contains("?") && path.indexOf('?') < path.length()) { // Contains query strings
+				for(String query : path.substring(path.indexOf('?') + 1, path.length()).split("&")) {
+					((RequestHTTPPacket.Builder) builder).addQuery(
+							query.substring(0, query.indexOf('=')),
+							query.substring(query.indexOf('=') + 1, query.length())
+					);
+				}
+			}
 		} else { // Invalid
 			return null;
 		}
@@ -70,7 +81,7 @@ public class BasicHTTPParser implements IHTTPParser {
 		if(fields.length > 1) {
 			for(; i < fields.length; i++) {
 				String header = fields[i];
-				if(header.isEmpty()) break; // body begins at empty line
+				if(header.isEmpty()) break; // Body begins at empty line
 
 				int breaker = header.indexOf(": "); // Split header using "key: value" format
 				if(breaker != -1) {
@@ -112,9 +123,21 @@ public class BasicHTTPParser implements IHTTPParser {
 			));
 		} else { // Request
 			String path = ((RequestHTTPPacket) parsed).getPath();
+			StringBuilder pathBuilder = new StringBuilder(path.isEmpty() ? "/" : path);
+
+			Map<String, String> queries = ((RequestHTTPPacket) parsed).getQueries();
+			if(queries.size() > 0) { // Serialize queries if they exist
+				pathBuilder.append('?');
+				for(String key : queries.keySet()) {
+					pathBuilder.append(key)
+							.append('=')
+							.append(((RequestHTTPPacket) parsed).getQuery(key));
+				}
+			}
+
 			builder.append(String.format("%s \"%s\" %s\r\n",
 					((RequestHTTPPacket) parsed).getMethod().getMethod(),
-					(path.isEmpty() ? "/" : path),
+					(pathBuilder.toString()),
 					parsed.getVersion().getVersion()));
 		}
 
@@ -143,6 +166,7 @@ public class BasicHTTPParser implements IHTTPParser {
 					&& (parsed instanceof RequestHTTPPacket
 					&& ((RequestHTTPPacket) parsed).getMethod() != null // Valid method
 					&& ((RequestHTTPPacket) parsed).getPath() != null) // Valid path
+					&& !((RequestHTTPPacket) parsed).getQueries().containsValue(null) // No invalid query strings
 					^ (parsed instanceof ResponseHTTPPacket // Valid request XOR (^) a valid response
 					&& ((ResponseHTTPPacket) parsed).getCode() != null); // Valid code
 		}
